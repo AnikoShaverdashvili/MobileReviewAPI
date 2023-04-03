@@ -4,11 +4,13 @@ using MobileReviewAPI.Models;
 
 namespace MobileReviewAPI.AutoMapper
 {
-    public class MappingProfiles:Profile
+    public class MappingProfiles : Profile
     {
-        public MappingProfiles() 
+        public MappingProfiles()
         {
             CreateMap<Mobile, MobileDto>();
+            CreateMap<Category, CategoryDto>();
+            CreateMap<Country,CountryDto>();    
         }
     }
 }

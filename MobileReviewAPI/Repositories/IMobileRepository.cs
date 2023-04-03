@@ -8,6 +8,6 @@ namespace MobileReviewAPI.Repositories
         Task<Mobile> GetMobileIdAsync(int mobId);
         Task<Mobile> GetMobileNamesAsync(string Name);
         Task<decimal> GetMobileRating(int mobId);
-        Task<bool> MobileExists(int mobId);
+        bool MobileExists(int mobId);
     }
 }

@@ -11,6 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 builder.Services.AddScoped<IMobileRepository, MobileRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();  
+builder.Services.AddScoped<ICountryRepository,CountryRepository>();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // Load configuration from appsettings.json file

@@ -39,7 +39,7 @@ namespace MobileReviewAPI.Repositories
             return ((decimal)review.Sum(r => r.Rating) / review.Count());
         }
 
-        public async Task<bool> MobileExists(int mobId)
+        public bool MobileExists(int mobId)
         {
             return _context.Mobiles.Any(m => m.Id == mobId);
         }
