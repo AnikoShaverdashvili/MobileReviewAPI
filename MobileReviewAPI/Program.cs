@@ -4,11 +4,12 @@ using Microsoft.Extensions.Configuration;
 using MobileReviewAPI;
 using Microsoft.Extensions.Options;
 using MobileReviewAPI.Repositories;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
 builder.Services.AddScoped<IMobileRepository, MobileRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
