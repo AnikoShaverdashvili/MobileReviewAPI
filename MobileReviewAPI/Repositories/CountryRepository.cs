@@ -18,7 +18,7 @@ namespace MobileReviewAPI.Repositories
             return _context.Countries.Any(c => c.Id == id);
         }
 
-        public async Task<IEnumerable<Country>> GetAllCountries()
+        public async Task<IEnumerable<Country>> GetAllCountriesAsync()
         {
             return await _context.Countries.OrderBy(c => c.Id).ToListAsync();
         }

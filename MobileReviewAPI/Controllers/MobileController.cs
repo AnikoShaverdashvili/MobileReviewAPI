@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using MobileReviewAPI.Data;
 using MobileReviewAPI.DTO;
 using MobileReviewAPI.Models;
 using MobileReviewAPI.Repositories;
@@ -35,7 +34,7 @@ namespace MobileReviewAPI.Controllers
         [HttpGet("{mobId}")]
         public async Task<ActionResult<Mobile>> GetMobileId(int mobId)
         {
-            if (! _mobileRepository.MobileExists(mobId))
+            if (!_mobileRepository.MobileExists(mobId))
             {
                 return NotFound();
             }
@@ -67,7 +66,7 @@ namespace MobileReviewAPI.Controllers
         [HttpGet("Rating/{mobId}")]
         public async Task<ActionResult<decimal>> GetMobileRating(int mobId)
         {
-            if (! _mobileRepository.MobileExists(mobId))
+            if (!_mobileRepository.MobileExists(mobId))
             {
                 return NotFound();
             }
