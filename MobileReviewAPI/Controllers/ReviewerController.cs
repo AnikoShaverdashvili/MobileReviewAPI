@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using MobileReviewAPI.Interfaces;
 
 namespace MobileReviewAPI.Controllers
 {
@@ -76,5 +77,94 @@ namespace MobileReviewAPI.Controllers
 
             return Ok(mapReviews);
         }
+        [HttpPost]
+        public async Task<ActionResult> CreateReviwer([FromBody] ReviewerDtoNoReview reviewerCreate)
+        {
+            if (reviewerCreate == null)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var reviewers = await _reviewerRepository.GetAllReviewers();
+            var reviewerExists = reviewers.FirstOrDefault(o => o.LastName.Trim().ToUpper() == reviewerCreate.LastName.TrimEnd().ToUpper());
+            if (reviewerExists != null)
+            {
+                ModelState.AddModelError("", "Reviewer already exists.");
+                return StatusCode(422, ModelState);
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var mapReviewer = _mapper.Map<Reviewer>(reviewerCreate);
+          
+            if (!await _reviewerRepository.CreateReviewer(mapReviewer))
+            {
+                ModelState.AddModelError("", "Something went wrong while saving");
+                return StatusCode(500, ModelState);
+            }
+
+            return Ok("Successfully Created");
+        }
+
+
+        [HttpPut("{reviewerId}")]
+        public async Task<ActionResult> UpdateReviewer(int reviewerId, ReviewerDtoNoReview updateReviewer)
+        {
+            if (updateReviewer == null)
+            {
+                return BadRequest(ModelState);
+            }
+            if (reviewerId != updateReviewer.Id)
+            {
+                return BadRequest(ModelState);
+            }
+            if (!_reviewerRepository.ReviwerExists(reviewerId))
+            {
+                return NotFound();
+            }
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var reviewerMap = _mapper.Map<Reviewer>(updateReviewer);
+            if (!await _reviewerRepository.UpdateReviewer(reviewerMap))
+            {
+                ModelState.AddModelError("", "Something went wrong updating owner");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+
+
+        }
+
+        [HttpDelete("{reviewerId}")]
+        public async Task<IActionResult> DeleteReviewer(int reviewerId)
+        {
+            if (!_reviewerRepository.ReviwerExists(reviewerId))
+            {
+                return NotFound();
+            }
+
+            var reviewerToDelete = await _reviewerRepository.GetReviewerById(reviewerId);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (!await _reviewerRepository.DeleteReviewer(reviewerToDelete))
+            {
+                ModelState.AddModelError("", "Something went wrong while deleting the reviewer");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
+
+
     }
 }

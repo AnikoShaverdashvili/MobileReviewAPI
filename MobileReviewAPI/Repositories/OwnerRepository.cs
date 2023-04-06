@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MobileReviewAPI.Data;
+using MobileReviewAPI.Interfaces;
 using MobileReviewAPI.Models;
 
 namespace MobileReviewAPI.Repositories
@@ -11,6 +12,18 @@ namespace MobileReviewAPI.Repositories
         public OwnerRepository(MobileReviewDbContext context)
         {
             _context = context;
+        }
+
+        public async Task<bool> CreateOwner(Owner owner)
+        {
+            await _context.Owners.AddAsync(owner);
+            return await Save();
+        }
+
+        public async Task<bool> DeleteOwner(Owner owner)
+        {
+            _context.Update(owner);
+            return await Save();
         }
 
         public async Task<IEnumerable<Owner>> GetAllOwnersAsync()
@@ -36,6 +49,17 @@ namespace MobileReviewAPI.Repositories
         public bool OwnerExists(int ownerId)
         {
             return _context.Owners.Any(o => o.Id == ownerId);
+        }
+
+        public async Task<bool> Save()
+        {
+            var save = await _context.SaveChangesAsync();
+            return save > 0 ? true : false;
+        }
+        public async Task<bool> UpdateOwner(Owner owner)
+        {
+            _context.Update(owner);
+            return await Save();
         }
     }
 }

@@ -2,8 +2,11 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MobileReviewAPI.DTO;
+using MobileReviewAPI.Interfaces;
 using MobileReviewAPI.Models;
 using MobileReviewAPI.Repositories;
+using System.Linq;
+
 
 namespace MobileReviewAPI.Controllers
 {
@@ -13,11 +16,19 @@ namespace MobileReviewAPI.Controllers
     {
         private readonly IMobileRepository _mobileRepository;
         private readonly IMapper _mapper;
-        public MobileController(IMobileRepository mobileRepository, IMapper mapper)
+        private readonly IOwnerRepository _ownerRepository;
+        private readonly ICategoryRepository _categoryRepository;
+        private readonly IReviewRepository _reviewRepository;
+
+        public MobileController(IMobileRepository mobileRepository, IMapper mapper, IOwnerRepository ownerRepository, ICategoryRepository categoryRepository, IReviewRepository reviewRepository)
         {
             _mobileRepository = mobileRepository;
             _mapper = mapper;
+            _ownerRepository = ownerRepository;
+            _categoryRepository = categoryRepository;
+            _reviewRepository = reviewRepository;
         }
+
         [HttpGet]
         public async Task<ActionResult<Mobile>> GetAllMobileAsync()
         {
@@ -77,6 +88,108 @@ namespace MobileReviewAPI.Controllers
             }
             return Ok(rating);
         }
+
+
+
+        [HttpPost]
+        public async Task<ActionResult> CreateMobile([FromQuery] int ownerId, [FromQuery] int catId, [FromBody] MobileDto createMobile)
+        {
+            if (createMobile == null)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var mobiles = await _mobileRepository.GetAllMobileAsync();
+            var mobileExists = mobiles.FirstOrDefault(m => m.Name.Trim().ToUpper() == createMobile.Name.TrimEnd().ToUpper());
+            if (mobileExists != null)
+            {
+                ModelState.AddModelError("", "Mobile already exists.");
+                return StatusCode(422, ModelState);
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var mobileMap = _mapper.Map<Mobile>(createMobile);
+
+
+            if (!await _mobileRepository.CreateMobile(ownerId, catId, mobileMap))
+            {
+                ModelState.AddModelError("", "Something went wrong while saving");
+                return StatusCode(500, ModelState);
+            }
+
+            return Ok("Successfully Created");
+        }
+
+
+        [HttpPut("{mobileId}")]
+        public async Task<IActionResult> UpdateMobile(int mobileId, [FromQuery] int ownerId, [FromQuery] int catId, [FromBody] MobileDto updatedMobile)
+        {
+            if (updatedMobile == null)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (mobileId != updatedMobile.Id)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (!_mobileRepository.MobileExists(mobileId))
+            {
+                return NotFound();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            var mobileMap = _mapper.Map<Mobile>(updatedMobile);
+
+            if (!await _mobileRepository.UpdateMobile(ownerId, catId, mobileMap))
+            {
+                ModelState.AddModelError("", "Something went wrong updating mobile");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
+
+        [HttpDelete("{mobileId}")]
+        public async Task<IActionResult> DeleteMobile(int mobileId)
+        {
+            if (!_mobileRepository.MobileExists(mobileId))
+            {
+                return NotFound();
+            }
+
+            var reviewsToDelete = await _reviewRepository.GetMobileReviews(mobileId);
+            var mobileToDelete = await _mobileRepository.GetMobileIdAsync(mobileId);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (!await _reviewRepository.DeleteReviewList(reviewsToDelete.ToList()))
+            {
+                ModelState.AddModelError("", "Something went wrong while deleting the reviews");
+            }
+
+
+            if (!await _mobileRepository.DeleteMobile(mobileToDelete))
+            {
+                ModelState.AddModelError("", "Something went wrong while deleting the mobile");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
+
 
 
     }

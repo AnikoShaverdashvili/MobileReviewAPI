@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MobileReviewAPI.Data;
+using MobileReviewAPI.Interfaces;
 using MobileReviewAPI.Models;
 using System.Text.RegularExpressions;
 
@@ -12,6 +13,33 @@ namespace MobileReviewAPI.Repositories
         public MobileRepository(MobileReviewDbContext context)
         {
             _context = context;
+        }
+
+        public async Task<bool> CreateMobile(int ownerId, int categoryId, Mobile mobile)
+        {
+            var mobileOwnerEntity = await _context.Owners.Where(o => o.Id == ownerId).FirstOrDefaultAsync();
+            var category = await _context.Categories.Where(c => c.Id == categoryId).FirstOrDefaultAsync();
+            var mobileOwner = new MobileOwner()
+            {
+                Owner = mobileOwnerEntity,
+                Mobile = mobile,
+            };
+            _context.AddAsync(mobileOwner);
+
+            var mobileCategory = new MobileCategory()
+            {
+                Category = category,
+                Mobile = mobile,
+            };
+            _context.AddAsync(mobileCategory);
+            _context.AddAsync(mobile);
+            return await Save();
+        }
+
+        public async Task<bool> DeleteMobile(Mobile mobile)
+        {
+            _context.Remove(mobile);
+            return await Save();
         }
 
         public async Task<IEnumerable<Mobile>> GetAllMobileAsync()
@@ -42,6 +70,18 @@ namespace MobileReviewAPI.Repositories
         public bool MobileExists(int mobId)
         {
             return _context.Mobiles.Any(m => m.Id == mobId);
+        }
+
+        public async Task<bool> Save()
+        {
+            var saved = await _context.SaveChangesAsync();
+            return saved > 0 ? true : false;
+        }
+
+        public async Task<bool> UpdateMobile(int ownerId, int categoryId, Mobile mobile)
+        {
+            _context.Update(mobile);
+            return await Save();
         }
     }
 }

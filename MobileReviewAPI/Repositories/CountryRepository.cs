@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MobileReviewAPI.Data;
+using MobileReviewAPI.Interfaces;
 using MobileReviewAPI.Models;
 
 namespace MobileReviewAPI.Repositories
@@ -16,6 +17,12 @@ namespace MobileReviewAPI.Repositories
         public bool CountryExists(int id)
         {
             return _context.Countries.Any(c => c.Id == id);
+        }
+
+        public async Task<bool> CreateCountry(Country country)
+        {
+            await _context.Countries.AddAsync(country);
+            return await Save();
         }
 
         public async Task<IEnumerable<Country>> GetAllCountriesAsync()
@@ -36,6 +43,22 @@ namespace MobileReviewAPI.Repositories
         public async Task<IEnumerable<Owner>> GetOwnersFromCountry(int id)
         {
             return await _context.Owners.Where(c => c.Country.Id == id).ToListAsync();
+        }
+
+        public async Task<bool> Save()
+        {
+            var save = await _context.SaveChangesAsync();
+            return save > 0 ? true : false;
+        }
+        public async Task<bool> UpdateCountry(Country country)
+        {
+            _context.Update(country);
+            return await Save();
+        }
+        public async Task<bool> DeleteCountry(Country country)
+        {
+            _context.Remove(country);
+            return await Save();
         }
     }
 }

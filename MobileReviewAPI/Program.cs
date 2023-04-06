@@ -5,6 +5,7 @@ using MobileReviewAPI;
 using Microsoft.Extensions.Options;
 using MobileReviewAPI.Repositories;
 using System.Text.Json.Serialization;
+using MobileReviewAPI.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -10,6 +10,7 @@ namespace MobileReviewAPI.Models
         [Column(TypeName = ("nvarchar(255)"))]
         public string Name { get; set; }
         public ICollection<Owner> Owners { get; set; }
+        
 
     }
 }
